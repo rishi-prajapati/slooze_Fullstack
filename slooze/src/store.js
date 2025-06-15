@@ -1,4 +1,15 @@
 import { configureStore, createSlice } from '@reduxjs/toolkit';
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from 'redux-persist';
+import storage from 'redux-persist/lib/storage'; // defaults to localStorage for web
 
 // ———— User Slice ————
 const userSlice = createSlice({
@@ -11,14 +22,14 @@ const userSlice = createSlice({
 });
 export const { setUser, clearUser } = userSlice.actions;
 
-// ———— Cart Slice ————
+// ———— Cart Slice (not persisted) ————
 const cartSlice = createSlice({
   name: 'cart',
   initialState: [],
   reducers: {
     addToCart: (state, action) => {
       const { menuItem, quantity } = action.payload;
-      const existing = state.find(item => item.menuItem === menuItem);
+      const existing = state.find((item) => item.menuItem === menuItem);
       if (existing) {
         existing.quantity += quantity;
       } else {
@@ -26,16 +37,34 @@ const cartSlice = createSlice({
       }
     },
     removeFromCart: (state, action) =>
-      state.filter(item => item.menuItem !== action.payload),
+      state.filter((item) => item.menuItem !== action.payload),
     clearCart: () => [],
   },
 });
 export const { addToCart, removeFromCart, clearCart } = cartSlice.actions;
 
-// ———— Store ————
+// ———— Persist Config (only user) ————
+const userPersistConfig = {
+  key: 'user',
+  storage,
+};
+
+const persistedUserReducer = persistReducer(userPersistConfig, userSlice.reducer);
+
+// ———— Store Setup ————
 export const store = configureStore({
   reducer: {
-    user: userSlice.reducer,
-    cart: cartSlice.reducer,
+    user: persistedUserReducer,
+    cart: cartSlice.reducer, // not persisted
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Fix non-serializable Redux persist actions
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
 });
+
+// ———— Persistor ————
+export const persistor = persistStore(store);
