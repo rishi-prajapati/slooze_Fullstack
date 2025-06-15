@@ -11,27 +11,51 @@ export default function ViewRestaurants() {
   const [restaurants, setRestaurants] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: "", country: "", image: "" });
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const router = useRouter();
 
-  // Redirect if user is not logged in
+  // ✅ Auth check on mount + polling for session expiry
   useEffect(() => {
-    if (!user) {
-      router.push("/login");
-    }
-  }, [user, router]);
+    const checkSession = async () => {
+      try {
+        const res = await fetch("/api/auth/session", {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (!data?.user) {
+          router.replace("/login");
+        } else {
+          setCheckingAuth(false);
+        }
+      } catch (err) {
+        console.error("Session check failed:", err);
+        router.replace("/login");
+      }
+    };
 
+    checkSession();
+
+    // 🔁 Poll every 30 seconds to revalidate session
+    const interval = setInterval(checkSession, 30000);
+    return () => clearInterval(interval);
+  }, [router]);
+
+  // Fetch restaurants
   useEffect(() => {
     async function fetchRestaurants() {
       try {
-        const res = await fetch("/api/restaurants");
+        const res = await fetch("/api/restaurants", {
+          method: "GET",
+          credentials: "include",
+        });
         const data = await res.json();
         if (res.ok) {
           setRestaurants(data);
         } else {
-          console.error(data.error);
+          console.error(data.error || "Unauthorized");
         }
       } catch (err) {
         console.error("Failed to fetch restaurants:", err);
@@ -43,18 +67,20 @@ export default function ViewRestaurants() {
     }
   }, [user]);
 
+  // Add restaurant
   const handleAddRestaurant = async (e) => {
     e.preventDefault();
     try {
       const res = await fetch("/api/restaurants", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (res.ok) {
         setRestaurants((prev) => [...prev, data]);
-        dispatch(addRestaurant(data)); // Add to Redux
+        dispatch(addRestaurant(data));
         setIsModalOpen(false);
         setFormData({ name: "", country: "", image: "" });
       } else {
@@ -65,8 +91,7 @@ export default function ViewRestaurants() {
     }
   };
 
-  // Optional: loading/flicker prevention
-  if (!user) {
+  if (checkingAuth) {
     return (
       <div className="h-screen flex items-center justify-center text-gray-500 text-lg">
         Redirecting to login...
@@ -80,13 +105,13 @@ export default function ViewRestaurants() {
         <title>View Restaurants</title>
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?display=swap&family=Noto+Sans:wght@400;500;700;900&family=Work+Sans:wght@400;500;700;900"
+          href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700&display=swap"
         />
       </Head>
 
       <div
         className="relative flex min-h-screen flex-col bg-slate-50 overflow-x-hidden"
-        style={{ fontFamily: '"Work Sans", "Noto Sans", sans-serif' }}
+        style={{ fontFamily: '"Work Sans", sans-serif' }}
       >
         <main className="px-4 md:px-40 py-5 w-full max-w-[960px] mx-auto">
           {user?.role !== "MEMBER" && (
@@ -111,7 +136,7 @@ export default function ViewRestaurants() {
                 <div
                   className="w-full bg-center bg-cover aspect-square rounded-xl"
                   style={{ backgroundImage: `url("${r.image}")` }}
-                ></div>
+                />
                 <div>
                   <p className="text-[#0d141c] text-base font-medium">{r.name}</p>
                   <p className="text-[#49719c] text-sm">{r.country}</p>
@@ -136,12 +161,9 @@ export default function ViewRestaurants() {
                   required
                 />
 
-                {/* Country Dropdown */}
                 <select
                   value={formData.country}
-                  onChange={(e) =>
-                    setFormData({ ...formData, country: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                   className="border px-3 py-2 rounded text-black"
                   required
                 >

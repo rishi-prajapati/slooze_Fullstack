@@ -1,93 +1,130 @@
 'use client';
+import Head from 'next/head';
 import React, { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function AdminDashboard() {
-  const [payments, setPayments] = useState([]);
-  const [editData, setEditData] = useState(null);
-  const [form, setForm] = useState({ cardNumber: '', expiry: '' });
+  const router = useRouter();
+  const [sessionChecked, setSessionChecked] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [payments, setPayments] = useState([]);
+  const [users, setUsers] = useState([]);
 
-  // Fetch all payment methods
+  const [editPayment, setEditPayment] = useState(null);
+  const [paymentForm, setPaymentForm] = useState({ cardNumber: '', expiry: '' });
+
+  const [editUser, setEditUser] = useState(null);
+  const [roleForm, setRoleForm] = useState({ role: '' });
+
+  // Redirect non-admins
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.user || data.user.role !== 'ADMIN') {
+          router.replace('/login');
+        } else {
+          fetchPayments();
+          fetchUsers();
+        }
+      })
+      .finally(() => setSessionChecked(true));
+  }, [router]);
+
   const fetchPayments = useCallback(async () => {
-    try {
-      const res = await fetch('/api/payments/all');
-      const data = await res.json();
-      setPayments(data);
-    } catch (err) {
-      console.error('Failed to fetch payments', err);
-    }
+    const res = await fetch('/api/payments/all');
+    if (res.ok) setPayments(await res.json());
   }, []);
 
-  useEffect(() => {
-    fetchPayments();
-  }, [fetchPayments]);
+  const fetchUsers = useCallback(async () => {
+    const res = await fetch('/api/auth/all');
+    if (res.ok) setUsers(await res.json());
+  }, []);
 
-  const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+  const handlePaymentChange = (e) =>
+    setPaymentForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  const handleSubmit = async (e) => {
+  const handleRoleChange = (e) => setRoleForm({ role: e.target.value });
+
+  const updatePayment = async (e) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      const res = await fetch(`/api/payments/${editData._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-
-      if (res.ok) {
-        await fetchPayments(); // Refresh list after update
-        setEditData(null); // Close modal
-      } else {
-        const error = await res.json();
-        alert(error.error || 'Failed to update');
-      }
-    } catch (err) {
-      console.error('Update failed', err);
-    } finally {
-      setLoading(false);
+    const res = await fetch(`/api/payments/${editPayment._id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(paymentForm),
+    });
+    if (res.ok) {
+      await fetchPayments();
+      setEditPayment(null);
+    } else {
+      alert((await res.json()).error || 'Update failed');
     }
+    setLoading(false);
   };
 
+  const updateUser = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    const res = await fetch(`/api/auth/all/${editUser._id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(roleForm),
+    });
+    if (res.ok) {
+      await fetchUsers();
+      setEditUser(null);
+    } else {
+      alert((await res.json()).error || 'Update failed');
+    }
+    setLoading(false);
+  };
+
+  if (!sessionChecked) {
+    return (
+      <div className="h-screen flex items-center justify-center text-gray-500">
+        Checking access...
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-white text-black font-sans">
-      <main className="px-4 md:px-40 py-6">
-        <div className="flex flex-wrap justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-[32px] font-bold leading-tight">Dashboard</h1>
-            <p className="text-sm text-[#8d5e5e]">Update user payments method</p>
-          </div>
-        </div>
+    <>
+      <Head>
+        <title>Admin Dashboard</title>
+      </Head>
 
-        
+      <div className="min-h-screen bg-slate-50 p-6 font-sans text-black">
+        <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
 
-        <h2 className="text-[22px] font-bold px-4 pb-3 pt-5">All Payment Methods</h2>
-        <div className="px-4 py-3">
-          <div className="overflow-x-auto rounded-xl border border-[#e7dada] bg-white">
-            <table className="min-w-full text-sm text-left">
-              <thead className="bg-white">
-                <tr>
-                  {['Payment ID', 'User ID', 'User Name', 'Card Number', 'Expiry', 'Actions'].map((head, i) => (
-                    <th key={i} className="px-4 py-3 font-medium text-[#181010]">{head}</th>
-                  ))}
+        {/* Payments Table */}
+        <section className="mb-10">
+          <h2 className="text-xl font-semibold mb-4">Payment Methods</h2>
+          <div className="overflow-x-auto bg-white rounded-xl shadow">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="px-4 py-2">ID</th>
+                  <th className="px-4 py-2">User</th>
+                  <th className="px-4 py-2">Card No.</th>
+                  <th className="px-4 py-2">Expiry</th>
+                  <th className="px-4 py-2">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {payments.map((payment) => (
-                  <tr key={payment._id} className="border-t border-[#e7dada]">
-                    <td className="px-4 py-2 text-[#181010]">{payment._id}</td>
-                    <td className="px-4 py-2 text-[#8d5e5e]">{payment.user?._id}</td>
-                    <td className="px-4 py-2 text-[#8d5e5e]">{payment.user?.name}</td>
-                    <td className="px-4 py-2 text-[#8d5e5e]">{payment.cardNumber}</td>
-                    <td className="px-4 py-2 text-[#8d5e5e]">{payment.expiry}</td>
+                {payments.map(p => (
+                  <tr key={p._id} className="border-t">
+                    <td className="px-4 py-2">{p._id}</td>
+                    <td className="px-4 py-2">{p.user?.name} ({p.user?._id})</td>
+                    <td className="px-4 py-2">{p.cardNumber}</td>
+                    <td className="px-4 py-2">{p.expiry}</td>
                     <td className="px-4 py-2">
                       <button
                         onClick={() => {
-                          setEditData(payment);
-                          setForm({ cardNumber: payment.cardNumber, expiry: payment.expiry });
+                          setEditPayment(p);
+                          setPaymentForm({ cardNumber: p.cardNumber, expiry: p.expiry });
                         }}
-                        className="bg-[#e2e2ff] text-[#181010] rounded-xl px-4 h-8 text-sm font-medium"
+                        className="px-3 py-1 bg-blue-500 text-white rounded"
                       >
                         Edit
                       </button>
@@ -96,56 +133,130 @@ export default function AdminDashboard() {
                 ))}
               </tbody>
             </table>
-
-            {/* Modal */}
-            {editData && (
-              <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-                <div className="bg-white p-6 rounded-xl w-96 shadow-xl">
-                  <h3 className="text-xl font-bold mb-4">Edit Payment Method</h3>
-                  <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <input
-                      type="text"
-                      name="cardNumber"
-                      value={form.cardNumber}
-                      onChange={handleChange}
-                      placeholder="Card Number"
-                      className="border px-4 py-2 rounded-md"
-                      required
-                    />
-                    <input
-                      type="text"
-                      name="expiry"
-                      value={form.expiry}
-                      onChange={handleChange}
-                      placeholder="Expiry (MM/YY)"
-                      className="border px-4 py-2 rounded-md"
-                      required
-                    />
-                    <div className="flex justify-end gap-3 pt-2">
-                      <button
-                        type="button"
-                        onClick={() => setEditData(null)}
-                        className="bg-gray-300 text-black px-4 py-2 rounded-md"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className={`px-4 py-2 rounded-md text-white ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600'}`}
-                      >
-                        {loading ? 'Saving...' : 'Save'}
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
           </div>
-        </div>
 
-        
-      </main>
-    </div>
+          {editPayment && (
+            <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+              <form
+                onSubmit={updatePayment}
+                className="bg-white p-6 rounded-xl shadow-lg w-[90%] max-w-md"
+              >
+                <h3 className="text-lg font-bold mb-4">Edit Payment</h3>
+                <input
+                  name="cardNumber"
+                  value={paymentForm.cardNumber}
+                  onChange={handlePaymentChange}
+                  className="border p-2 w-full rounded mb-3"
+                  placeholder="Card Number"
+                  required
+                />
+                <input
+                  name="expiry"
+                  value={paymentForm.expiry}
+                  onChange={handlePaymentChange}
+                  className="border p-2 w-full rounded mb-4"
+                  placeholder="MM/YY"
+                  required
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditPayment(null)}
+                    className="px-4 py-2 bg-gray-300 rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={`px-4 py-2 text-white rounded ${loading ? 'bg-gray-500' : 'bg-blue-600'}`}
+                  >
+                    {loading ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+        </section>
+
+        {/* Users Table */}
+        <section>
+          <h2 className="text-xl font-semibold mb-4">Users Management</h2>
+          <div className="overflow-x-auto bg-white rounded-xl shadow">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="px-4 py-2">ID</th>
+                  <th className="px-4 py-2">Name</th>
+                  <th className="px-4 py-2">Email</th>
+                  <th className="px-4 py-2">Role</th>
+                  <th className="px-4 py-2">Country</th>
+                  <th className="px-4 py-2">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map(u => (
+                  <tr key={u._id} className="border-t">
+                    <td className="px-4 py-2">{u._id}</td>
+                    <td className="px-4 py-2">{u.name}</td>
+                    <td className="px-4 py-2">{u.email}</td>
+                    <td className="px-4 py-2">{u.role}</td>
+                    <td className="px-4 py-2">{u.country}</td>
+                    <td className="px-4 py-2">
+                      <button
+                        onClick={() => {
+                          setEditUser(u);
+                          setRoleForm({ role: u.role });
+                        }}
+                        className="px-3 py-1 bg-green-500 text-white rounded"
+                      >
+                        Edit Role
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {editUser && (
+            <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+              <form
+                onSubmit={updateUser}
+                className="bg-white p-6 rounded-xl shadow-lg w-[90%] max-w-md"
+              >
+                <h3 className="text-lg font-bold mb-4">Edit User Role</h3>
+                <select
+                  name="role"
+                  value={roleForm.role}
+                  onChange={handleRoleChange}
+                  className="border p-2 w-full rounded mb-4"
+                >
+                  <option value="MEMBER">MEMBER</option>
+                  <option value="MANAGER">MANAGER</option>
+                  <option value="ADMIN">ADMIN</option>
+                </select>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditUser(null)}
+                    className="px-4 py-2 bg-gray-300 rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={`px-4 py-2 text-white rounded ${loading ? 'bg-gray-500' : 'bg-green-600'}`}
+                  >
+                    {loading ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+        </section>
+      </div>
+    </>
   );
 }

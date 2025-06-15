@@ -1,4 +1,4 @@
-// store/userSlice.js or wherever you define slices
+// src/store/userSlice.js
 
 import { createSlice } from '@reduxjs/toolkit';
 
@@ -7,7 +7,7 @@ const initialState = {
 };
 
 const userSlice = createSlice({
-  name: 'user',
+  name: 'user',      // Should be "user", not null
   initialState,
   reducers: {
     setUser(state, action) {

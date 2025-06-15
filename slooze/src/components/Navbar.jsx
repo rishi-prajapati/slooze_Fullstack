@@ -1,21 +1,58 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearUser } from '../store'; // Update path as needed
+import { clearCart } from '../store'; // Update path as needed
 
 export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const user = useSelector((state) => state.user);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const dispatch = useDispatch(); // Get dispatch function
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Prevent hydration mismatch
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownOpen]);
+
+  // Handle logout
+  const handleLogout = async () => {
+    // Clear Redux state
+    dispatch(clearUser());
+    dispatch(clearCart());
+    
+    // Clear session cookies
+    await signOut({ redirect: false });
+    
+    // Close dropdown
+    setDropdownOpen(false);
+    
+    // Refresh to reset app state
+    window.location.href = '/';
+  };
+
   if (!mounted) return <div className="h-16" />;
 
   const rolePath = user?.role?.toLowerCase();
@@ -39,7 +76,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm px-4 sm:px-8 py-3">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        {/* Left: Logo */}
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <span className="text-lg font-bold tracking-tight text-black">Slooze</span>
         </Link>
@@ -56,8 +93,9 @@ export default function Navbar() {
             </Link>
           ))}
 
+          {/* Conditional rendering based on auth state */}
           {user?.name ? (
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="rounded-full overflow-hidden border w-9 h-9"
@@ -75,7 +113,7 @@ export default function Navbar() {
                   </div>
                   <div className="border-t">
                     <button
-                      onClick={() => signOut()}
+                      onClick={handleLogout}
                       className="w-full text-left px-4 py-2 hover:bg-gray-100"
                     >
                       Log out
@@ -85,6 +123,7 @@ export default function Navbar() {
               )}
             </div>
           ) : (
+            // Show login/signup buttons when logged out
             <>
               <Link href="/login" className="hover:text-[#ff4d4d]">
                 Log in
