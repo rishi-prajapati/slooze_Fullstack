@@ -6,6 +6,7 @@ import dbConnect from '@/lib/dbConnect';
 import mongoose from 'mongoose';
 import Order from '@/models/Order';
 import MenuItem from '@/models/MenuItem';
+import order from '@/models/Order';
 
 export async function GET(req) {
   try {
@@ -50,6 +51,15 @@ export async function GET(req) {
       image: menuItem.image,
       quantity: menuItemMap.get(menuItem._id.toString()) || 0,
       restaurant: menuItem.restaurant?.name || "Unknown",
+      orderId: cartOrders.find(order =>
+        order.items.some(item => item.menuItem.toString() === menuItem._id.toString())
+      )?._id || null,
+      restaurantId: menuItem.restaurant?._id || null,
+      description: menuItem.description || "",
+      category: menuItem.category || "Uncategorized",
+      isAvailable: menuItem.isAvailable || false,
+      createdAt: menuItem.createdAt || new Date(),
+      updatedAt: menuItem.updatedAt || new Date(),
     }));
 
     return NextResponse.json(mergedItems, { status: 200 });

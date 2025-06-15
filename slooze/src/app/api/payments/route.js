@@ -17,22 +17,22 @@ export async function GET(req) {
     return NextResponse.json({ error: 'Failed to fetch payment methods' }, { status: 500 });
   }
 }
-
 export async function POST(req) {
   try {
     await dbConnect();
     const user = await authenticateRequest(req);
-    // if (!user || user.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden: Admin only' }, { status: 403 });
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { userId, cardNumber, expiry } = await req.json();
-    if (!userId || !cardNumber || !expiry) {
-      return NextResponse.json({ error: 'userId, cardNumber, and expiry are required' }, { status: 400 });
+    const { cardNumber, expiry } = await req.json();
+    if (!cardNumber || !expiry) {
+      return NextResponse.json({ error: 'cardNumber and expiry are required' }, { status: 400 });
     }
 
-    const method = await PaymentMethod.create({ user: userId, cardNumber, expiry });
+    const method = await PaymentMethod.create({ user: user._id, cardNumber, expiry });
     return NextResponse.json(method, { status: 201 });
   } catch (err) {
     console.error('POST /payment-methods error:', err);
     return NextResponse.json({ error: 'Failed to add payment method' }, { status: 500 });
   }
 }
+

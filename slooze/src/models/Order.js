@@ -9,7 +9,7 @@ const orderItemSchema = new mongoose.Schema({
 const orderSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   country: { type: String, enum: ['INDIA', 'AMERICA'], required: true },
-  status: { type: String, enum: ['CART', 'PENDING', 'PAID', 'CANCELLED'], default: 'CART' },
+  status: { type: String, enum: ['CART', 'PENDING', 'PAID', 'CANCELLED','PLACED'], default: 'CART' },
   items: { type: [orderItemSchema], required: true },
 
   // Optional address fields
