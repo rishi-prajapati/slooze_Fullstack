@@ -1,0 +1,602 @@
+{
+	"info": {
+		"_postman_id": "217f849d-e92c-4987-ba47-4d9a8ad088a2",
+		"name": "slooze",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33792304"
+	},
+	"item": [
+		{
+			"name": "Register",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Sidd\",\n  \"email\": \"sidd@gmail.com\",\n  \"password\": \"123456\",\n  \"role\": \"ADMIN\",\n  \"country\": \"INDIA\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/auth/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:3000/api/auth/callback/credentials",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "email",
+							"value": "sidd@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "sidd",
+							"type": "text"
+						},
+						{
+							"key": "csrfToken",
+							"value": "f2bc1b9db478674d2930c655febb6ed0df6ec96a7c89e90071a35994169bc273",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/auth/callback/credentials",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"auth",
+						"callback",
+						"credentials"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get CSRF token",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://www.prajapatirishi.site/api/auth/csrf",
+					"protocol": "https",
+					"host": [
+						"www",
+						"prajapatirishi",
+						"site"
+					],
+					"path": [
+						"api",
+						"auth",
+						"csrf"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/auth/all",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"auth",
+						"all"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Resturant",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Tandoori Express\",\n  \"country\": \"INDIA\",\n      \"image\": \"https://images.unsplash.com/photo-1600891964599-f61ba0e24092\"\n \n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/restaurants",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"restaurants"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all resturant",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/restaurants",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"restaurants"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get resturant by id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/restaurants/684b08e85cf67ab8524a5a07",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"restaurants",
+						"684b08e85cf67ab8524a5a07"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete resturant",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/restaurants/68494ba2c12f4085fd1a536c",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"restaurants",
+						"68494ba2c12f4085fd1a536c"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add the menuItems",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Panipuri\",\n  \"price\": 30,\n  \"restaurant\": \"684b0b635cf67ab8524a5a1d\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/menuitems",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"menuitems"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all the menuitems",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/menuitems",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"menuitems"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get menu item by it",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/menuitems/684b10ea78a044ac4aa2fba8",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"menuitems",
+						"684b10ea78a044ac4aa2fba8"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get menu items with resturant id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/menuitems/684b0b635cf67ab8524a5a1d/menuitems",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"menuitems",
+						"684b0b635cf67ab8524a5a1d",
+						"menuitems"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Deletee the menuitems",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/menuitems/684b10ea78a044ac4aa2fba8",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"menuitems",
+						"684b10ea78a044ac4aa2fba8"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create order",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"items\": [\n    {\n      \"menuItem\": \"684be550350fd9973d3a91c8\",\n      \"quantity\": 2\n    },\n    {\n      \"menuItem\": \"684be560350fd9973d3a91cc\",\n      \"quantity\": 1\n    }\n  ]\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/orders",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get order by order id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/orders/684be585350fd9973d3a91d6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"orders",
+						"684be585350fd9973d3a91d6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Order ",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"items\": [\n    {\n      \"menuItem\": \"684be560350fd9973d3a91cc\",\n      \"quantity\": 4\n    }\n  ]\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/orders/684be585350fd9973d3a91d6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"orders",
+						"684be585350fd9973d3a91d6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Place order",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/orders/684be585350fd9973d3a91d6/place",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"orders",
+						"684be585350fd9973d3a91d6",
+						"place"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel order",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/orders/684be585350fd9973d3a91d6/cancel",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"orders",
+						"684be585350fd9973d3a91d6",
+						"cancel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get orders by userId",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/orders/user/684a7d69d67fb1a0e380e34a",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"orders",
+						"user",
+						"684a7d69d67fb1a0e380e34a"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add payments",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userId\": \"684a7d69d67fb1a0e380e34a\",\n  \"cardNumber\": \"4111111111111111\",\n  \"expiry\": \"12/26\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/payments",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"payments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all payment method for the user",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/payments",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"payments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get payment details",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/payments/684beb97350fd9973d3a91f3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"payments",
+						"684beb97350fd9973d3a91f3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update the payment methods",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n     \"cardNumber\": \"4111111111111112\",\n        \"expiry\": \"12/26\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/payments/684beb97350fd9973d3a91f3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"payments",
+						"684beb97350fd9973d3a91f3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Payement method",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/payments/684beb97350fd9973d3a91f3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"payments",
+						"684beb97350fd9973d3a91f3"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
